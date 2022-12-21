@@ -2,6 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
+import Defined.QueryFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
@@ -25,7 +26,7 @@ public class MainGUI extends javax.swing.JFrame {
      */
     public MainGUI() {
         initComponents();
-
+        
         // TODO code application logic here
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");  // load the driver
@@ -33,7 +34,7 @@ public class MainGUI extends javax.swing.JFrame {
         } catch (ClassNotFoundException e) {
             System.out.println("ClassNotFoundException :" + e.getMessage());
         }
-        
+
         // Retrieving connection user name and password from manually-filled local file 'connectionInfo.properties',
         // and storing them into key-value 'Properties' object 'connectionInfo'
         try {
@@ -61,6 +62,8 @@ public class MainGUI extends javax.swing.JFrame {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        
+        
 
 //        try {
 //            String queryTable = "CREATE TABLE IF NOT EXISTS students";
