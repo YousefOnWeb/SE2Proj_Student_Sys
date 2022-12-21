@@ -58,6 +58,8 @@ public class QueryFactory {
                GO
                """, databaseName,tableName);
     }
+    
+    //not tested but mostly working
     public static String insertInto(String databaseName, String tableName, String valuesCommaSeparated) {
         return String.format("""
                use %1$s
