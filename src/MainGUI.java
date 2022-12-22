@@ -3,12 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 
+import java.awt.List;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Properties;
-
 
 /**
  *
@@ -28,7 +29,7 @@ public class MainGUI extends javax.swing.JFrame {
      */
     public MainGUI() {
         initComponents();
-        
+
         // TODO code application logic here
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");  // load the driver
@@ -64,22 +65,21 @@ public class MainGUI extends javax.swing.JFrame {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        
+
         try {
             statement = con.createStatement();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        
+
 //        Defined.QueryFactory.createDBIfNotExists("asdfa", statement);
 //        Defined.QueryFactory.setDBAsCurrent("asdfa", statement);
+//        Defined.QueryFactory.createTableIfNotExists("asdfa", "table2", "a7aCol1 varchar(255), a7aCol2 varchar(255)", statement);
+//        Defined.QueryFactory.insertInto("asdfa", "table2", "'Valioooo','Hellloooo'", statement);
 //        
-//        Defined.QueryFactory.createTableIfNotExists("asdfa", "A7aTable", "a7aCol1 varchar(255)", statement);
-//        Defined.QueryFactory.insertInto("asdfa", "A7aTable", "'Valioooo'", statement);
+//        ArrayList<String> row = Defined.QueryFactory.selectUniqueRow("asdfa", "table2", "a7aCol1","Valioooo", statement);
+//        System.out.println(row.toString());
 
-        
-        
-        
     }
 
     /**

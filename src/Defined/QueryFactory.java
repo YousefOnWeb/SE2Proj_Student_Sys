@@ -4,7 +4,11 @@
  */
 package Defined;
 
+import java.awt.List;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -59,11 +63,13 @@ public class QueryFactory {
     }
 
     /**
-     * Creates a table of given 'tableName' in given BD 'dataBaseName' if not previously exists
+     * Creates a table of given 'tableName' in given BD 'dataBaseName' if not
+     * previously exists
      *
      * @param databaseName name of DB in which table to be created
      * @param tableName name of table to be created
-     * @param tableColumnsDefinition string specifying table columns. e.g. "col1 varchar(64), col2 int"
+     * @param tableColumnsDefinition string specifying table columns. e.g. "col1
+     * varchar(64), col2 int"
      * @param statement SQL Connection's Statement object
      * @return True if query has a result (e.g. SELECT), False if it doesn't
      * (e.g. INSERT or DROP)
@@ -85,7 +91,6 @@ public class QueryFactory {
         return execResult;
     }
 
-    
     public static boolean dropDatabaseIfExists(String dataBaseName, String tempDatabaseName, Statement statement) {
         String query = String.format("""
                USE %1$s;
@@ -130,7 +135,7 @@ public class QueryFactory {
     //not tested but mostly working
     public static boolean insertInto(String databaseName, String tableName, String valuesCommaSeparated, Statement statement) {
         String query = String.format("""
-               use %1$s
+               USE %1$s
                ;
                INSERT INTO %2$s
                VALUES (%3$s);
@@ -143,6 +148,49 @@ public class QueryFactory {
             System.out.println(ex.getMessage());
         }
         return execResult;
+    }
+
+    
+    /**
+     * takes name of column holding primary key (e.g. 'username'),
+     * and primary key value of a specific row,
+     * and returns that row as an ArrayList of strings
+     */
+    public static ArrayList<String> selectUniqueRow(String databaseName, String tableName, String primaryKeyColName, String primaryKey, Statement statement) {
+        String query = String.format("""
+               USE %1$s
+               ;
+               SELECT * FROM %2$s WHERE %3$s = '%4$s';
+               """, databaseName, tableName, primaryKeyColName, primaryKey);
+        
+        ResultSet resultSet = null;
+        ArrayList<String> row = new ArrayList<>();
+
+        int nOfCols = -1;
+
+        try {
+            resultSet = statement.executeQuery(query);
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        
+        try {
+            nOfCols = resultSet.getMetaData().getColumnCount();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        
+        try {
+            if (resultSet.next()) {
+                for (int i = 1; i <= nOfCols; i++) {
+                    row.add(resultSet.getString(i));
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        
+        return row;
     }
 
 }
