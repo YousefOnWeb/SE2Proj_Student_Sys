@@ -2,12 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-import Defined.QueryFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
+
 
 /**
  *
@@ -19,6 +20,7 @@ public class MainGUI extends javax.swing.JFrame {
     String databaseName = "se2_school_db";
     String connectionURL;
     Connection con = null;
+    Statement statement = null;
 
     /**
      * Creates new form NewJFrame
@@ -63,13 +65,21 @@ public class MainGUI extends javax.swing.JFrame {
             System.out.println(e.getMessage());
         }
         
+        try {
+            statement = con.createStatement();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
         
+//        Defined.QueryFactory.createDBIfNotExists("asdfa", statement);
+//        Defined.QueryFactory.setDBAsCurrent("asdfa", statement);
+//        
+//        Defined.QueryFactory.createTableIfNotExists("asdfa", "A7aTable", "a7aCol1 varchar(255)", statement);
+//        Defined.QueryFactory.insertInto("asdfa", "A7aTable", "'Valioooo'", statement);
 
-//        try {
-//            String queryTable = "CREATE TABLE IF NOT EXISTS students";
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
+        
+        
+        
     }
 
     /**
