@@ -5,12 +5,17 @@
 
 import java.awt.List;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import jdk.jfr.StackTrace;
 
 /**
  *
@@ -19,13 +24,14 @@ import javax.swing.JOptionPane;
 public class MainGUI extends javax.swing.JFrame {
 
     Properties connectionInfo = new Properties();
-    Properties loginCredentials = new Properties();
-    String schoolDatabaseName = "DBBBb";
+    Properties loginData = new Properties();
+    String schoolDatabaseName = "SchoolDatabase";
     String studentsTableName = "Students";
     String teachersTableName = "Teachers";
     String connectionURL;
     Connection con = null;
     Statement statement = null;
+    ResultSet resSetForCount = null;
 
     /**
      * Creates new form NewJFrame
@@ -33,6 +39,13 @@ public class MainGUI extends javax.swing.JFrame {
      */
     public MainGUI() {
         initComponents();
+
+        try {
+            loginData.load(new FileInputStream("loginData.properties"));
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        }
+        LoginIndicatorLabel.setText("Currently logged as: " + loginData.get("name").toString());
 
         // TODO code application logic here
         try {
@@ -95,8 +108,32 @@ public class MainGUI extends javax.swing.JFrame {
                 + ", Address varchar(255)"
                 + ", Password varchar(30)",
                 statement);
-
         // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
+        
+        
+        // Display count of registered users
+        String queryCount = String.format("""
+                            USE [%1$s]
+                            ;
+                            SELECT  (
+                                    SELECT COUNT(*)
+                                    FROM   %2$s
+                                    )+
+                                    (
+                                    SELECT COUNT(*)
+                                    FROM   %3$s
+                                    )
+                            AS    SumCount
+                            """, schoolDatabaseName, studentsTableName, teachersTableName);
+        try {
+            resSetForCount = statement.executeQuery(queryCount);
+            resSetForCount.next();
+            CountIndicatorLabel.setText("Registered users: " +resSetForCount.getString("SumCount"));
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+
+
 //        Defined.QueryFactory.createDBIfNotExists("asdfa", statement);
 //        Defined.QueryFactory.setDBAsCurrent("asdfa", statement);
 //        Defined.QueryFactory.createTableIfNotExists("asdfa", "table2", "a7aCol1 varchar(255), a7aCol2 varchar(255)", statement);
@@ -128,6 +165,7 @@ public class MainGUI extends javax.swing.JFrame {
         LoginBTN = new javax.swing.JButton();
         LoginTypeChooser = new javax.swing.JComboBox<>();
         LoginIndicatorLabel = new javax.swing.JLabel();
+        CountIndicatorLabel = new javax.swing.JLabel();
         RegistrationPanel = new javax.swing.JPanel();
         RegistrationAsATeacher = new javax.swing.JPanel();
         TeacherNameLabel = new javax.swing.JLabel();
@@ -236,28 +274,36 @@ public class MainGUI extends javax.swing.JFrame {
         LoginIndicatorLabel.setFont(new java.awt.Font("Dialog", 1, 16)); // NOI18N
         LoginIndicatorLabel.setText("Currently Logged As: None");
 
+        CountIndicatorLabel.setText("Registered users: 0");
+
         javax.swing.GroupLayout LoginPanelLayout = new javax.swing.GroupLayout(LoginPanel);
         LoginPanel.setLayout(LoginPanelLayout);
         LoginPanelLayout.setHorizontalGroup(
             LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(LoginPanelLayout.createSequentialGroup()
-                .addContainerGap(211, Short.MAX_VALUE)
-                .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(LoginTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(LoginBTN, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(RemembermeCheck)
-                        .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(PasswordLabel)
-                            .addComponent(UsernameLabel)
-                            .addComponent(UsernameTxtField)
-                            .addComponent(LoginLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-                            .addComponent(PasswordField))))
-                .addContainerGap(212, Short.MAX_VALUE))
-            .addGroup(LoginPanelLayout.createSequentialGroup()
                 .addGap(22, 22, 22)
-                .addComponent(LoginIndicatorLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(LoginPanelLayout.createSequentialGroup()
+                        .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(LoginPanelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 302, Short.MAX_VALUE)
+                                .addComponent(LoginTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, LoginPanelLayout.createSequentialGroup()
+                                .addComponent(CountIndicatorLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(LoginBTN, javax.swing.GroupLayout.PREFERRED_SIZE, 203, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(RemembermeCheck)
+                                    .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(PasswordLabel)
+                                        .addComponent(UsernameLabel)
+                                        .addComponent(UsernameTxtField)
+                                        .addComponent(LoginLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+                                        .addComponent(PasswordField)))))
+                        .addContainerGap(212, Short.MAX_VALUE))
+                    .addGroup(LoginPanelLayout.createSequentialGroup()
+                        .addComponent(LoginIndicatorLabel)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         LoginPanelLayout.setVerticalGroup(
             LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -279,7 +325,9 @@ public class MainGUI extends javax.swing.JFrame {
                 .addGap(3, 3, 3)
                 .addComponent(LoginTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(LoginBTN)
+                .addGroup(LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(LoginBTN)
+                    .addComponent(CountIndicatorLabel))
                 .addContainerGap(123, Short.MAX_VALUE))
         );
 
@@ -738,15 +786,15 @@ public class MainGUI extends javax.swing.JFrame {
         } else {
 
             ArrayList<String> row = Defined.QueryFactory.selectUniqueRow(schoolDatabaseName,
-                    loginTypeSelected.equals("Teacher") ? teachersTableName: studentsTableName,
+                    loginTypeSelected.equals("Teacher") ? teachersTableName : studentsTableName,
                     "Username" // Column
-                    ,"\'" + usernameEntered + "\'",
-                     statement);
+                    ,
+                     "\'" + usernameEntered + "\'",
+                    statement);
 
-            if(row.isEmpty() || !row.get(4).equals(passwordEntered)){
+            if (row.isEmpty() || !row.get(4).equals(passwordEntered)) {
                 JOptionPane.showMessageDialog(this, "Wrong Login Credentials");
-            }
-            else{
+            } else {
                 String messageText = String.format("""
                                               Your Profile:
                                               =====================
@@ -761,12 +809,29 @@ public class MainGUI extends javax.swing.JFrame {
                                               %5$s
                                               ------
                                               
-                                              """,row.get(0),
-                                              row.get(1),
-                                              loginTypeSelected.equals("Teacher") ? "Years of experience": "Grade",
-                                              row.get(2),
-                                              row.get(3));
+                                              """, row.get(0),
+                        row.get(1),
+                        loginTypeSelected.equals("Teacher") ? "Years of experience" : "Grade",
+                        row.get(2),
+                        row.get(3));
                 JOptionPane.showMessageDialog(this, messageText);
+
+                LoginIndicatorLabel.setText("Currently logged as: " + row.get(0));
+
+                if (RemembermeCheck.isSelected()) {
+                    loginData.setProperty("name", row.get(0));
+                } else {
+                    loginData.setProperty("name", "None");
+                }
+
+                try {
+                    loginData.store(new FileOutputStream("loginData.properties"), null);
+                } catch (FileNotFoundException ex) {
+                    System.out.println(ex.getMessage());
+                } catch (IOException ex) {
+                    System.out.println(ex.getMessage());
+                }
+
             }
 
         }
@@ -814,6 +879,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel AboutUsPanel;
     private javax.swing.JLabel ContactHeadingLabel;
     private javax.swing.JPanel ContactUsPanel;
+    private javax.swing.JLabel CountIndicatorLabel;
     private javax.swing.JLabel GradeLabel;
     private javax.swing.JTextField GradeTextField;
     private javax.swing.JLabel Headlabel;

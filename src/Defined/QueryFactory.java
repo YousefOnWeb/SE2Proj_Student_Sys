@@ -36,6 +36,7 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
@@ -58,6 +59,7 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
@@ -87,11 +89,13 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
 
     public static boolean dropDatabaseIfExists(String dataBaseName, String tempDatabaseName, Statement statement) {
+        createDBIfNotExists(tempDatabaseName,statement);
         String query = String.format("""
                USE %1$s;
                ;
@@ -112,6 +116,7 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
@@ -128,6 +133,7 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
@@ -146,23 +152,27 @@ public class QueryFactory {
             execResult = statement.execute(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
         return execResult;
     }
 
-    
     /**
-     * takes name of column holding primary key (e.g. 'username'),
-     * and primary key value of a specific row,
-     * and returns that row as an ArrayList of strings
+     * takes name of column holding primary key (e.g. 'username'), and primary
+     * key value of a specific row, and returns that row as an ArrayList of
+     * strings
      */
-    public static ArrayList<String> selectUniqueRow(String databaseName, String tableName, String primaryKeyColName, String primaryKey, Statement statement) {
+    public static ArrayList<String> selectUniqueRow(String databaseName,
+            String tableName,
+            String primaryKeyColName,
+            String primaryKey,
+            Statement statement) {
         String query = String.format("""
                USE %1$s
                ;
                SELECT * FROM %2$s WHERE %3$s = %4$s;
                """, databaseName, tableName, primaryKeyColName, primaryKey);
-        
+
         ResultSet resultSet = null;
         ArrayList<String> row = new ArrayList<>();
 
@@ -172,14 +182,15 @@ public class QueryFactory {
             resultSet = statement.executeQuery(query);
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            System.out.println(query);
         }
-        
+
         try {
             nOfCols = resultSet.getMetaData().getColumnCount();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        
+
         try {
             if (resultSet.next()) {
                 for (int i = 1; i <= nOfCols; i++) {
@@ -189,7 +200,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
-        
+
         return row;
     }
 
