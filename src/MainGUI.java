@@ -4,6 +4,8 @@
  */
 
 import java.awt.List;
+import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -40,6 +42,30 @@ public class MainGUI extends javax.swing.JFrame {
     public MainGUI() {
         initComponents();
 
+        File loginDataFile = new File("loginData.properties");
+        if (!loginDataFile.exists()) {
+            loginData.setProperty("name", "None");
+            try {
+                loginData.store(new FileOutputStream("loginData.properties"), null);
+            } catch (FileNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        File connectionInfoFile = new File("connectionInfo.properties");
+        if (!connectionInfoFile.exists()) {
+            loginData.setProperty("password", "YourDBPasswordWithoutQuotes");
+            loginData.setProperty("user", "YourDBUserNameWithoutQuotes");
+            try {
+                loginData.store(new FileOutputStream("connectionInfo.properties"), null);
+            } catch (FileNotFoundException ex) {
+                System.out.println(ex.getMessage());
+            } catch (IOException ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+
         try {
             loginData.load(new FileInputStream("loginData.properties"));
         } catch (IOException ex) {
@@ -73,46 +99,33 @@ public class MainGUI extends javax.swing.JFrame {
         try {
             con = DriverManager.getConnection(connectionURL); // initiate connection
             System.out.println("Connection done!");
-        } catch (SQLException e) {
-            System.out.println("Sql Exception :" + e.getMessage());
-        }
 
-        try {
             con.setAutoCommit(true);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-
-        try {
             statement = con.createStatement();
-        } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
-        }
 
-        Defined.QueryFactory.createDBIfNotExists(schoolDatabaseName, statement);
-        Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
-                teachersTableName,
-                "Name varchar(25)"
-                + ", Username varchar(15) NOT NULL "
-                + ", YearsofExperience varchar(15)"
-                + ", Address varchar(255)"
-                + ", Password varchar(30)",
-                statement);
-        // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
+            Defined.QueryFactory.createDBIfNotExists(schoolDatabaseName, statement);
+            Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
+                    teachersTableName,
+                    "Name varchar(25)"
+                    + ", Username varchar(15) NOT NULL "
+                    + ", YearsofExperience varchar(15)"
+                    + ", Address varchar(255)"
+                    + ", Password varchar(30)",
+                    statement);
+            // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
 
-        Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
-                studentsTableName,
-                "Name varchar(25)"
-                + ", Username varchar(15) NOT NULL "
-                + ", Grade varchar(15)"
-                + ", Address varchar(255)"
-                + ", Password varchar(30)",
-                statement);
-        // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
-        
-        
-        // Display count of registered users
-        String queryCount = String.format("""
+            Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
+                    studentsTableName,
+                    "Name varchar(25)"
+                    + ", Username varchar(15) NOT NULL "
+                    + ", Grade varchar(15)"
+                    + ", Address varchar(255)"
+                    + ", Password varchar(30)",
+                    statement);
+            // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
+
+            // Display count of registered users
+            String queryCount = String.format("""
                             USE [%1$s]
                             ;
                             SELECT  (
@@ -125,12 +138,21 @@ public class MainGUI extends javax.swing.JFrame {
                                     )
                             AS    SumCount
                             """, schoolDatabaseName, studentsTableName, teachersTableName);
-        try {
             resSetForCount = statement.executeQuery(queryCount);
             resSetForCount.next();
-            CountIndicatorLabel.setText("Registered users: " +resSetForCount.getString("SumCount"));
-        } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            CountIndicatorLabel.setText("Registered users: " + resSetForCount.getString("SumCount"));
+
+        } catch (SQLException e) {
+            System.out.println("Sql Exception :" + e.getMessage());
+            JOptionPane.showMessageDialog(this, """
+                                                School Program could not make a proper connection to your DBMS:
+                                                1. Make sure MS SQL Server is correctly set-up on your machine.
+                                                2. Make sure to fill file in program directory named 'connectionInfo.properties',
+                                                with correct DB user name and password.
+                                                
+                                                Program will close so you resolve the problem and launch it again.
+                                                """);
+            System.exit(0);
         }
 
 
@@ -700,7 +722,11 @@ public class MainGUI extends javax.swing.JFrame {
         String AddressTeacher = TeacherAddressArea.getText();
         String passwordTeacher = String.valueOf(TeacherPasswordField.getPassword());
 
-        if (nameTeacher.isEmpty() || usernameTeacher.isEmpty() || YearsOfExperince.isEmpty() || AddressTeacher.isEmpty() || passwordTeacher.isEmpty()) {
+        if (nameTeacher.isEmpty()
+                || usernameTeacher.isEmpty()
+                || YearsOfExperince.isEmpty()
+                || AddressTeacher.isEmpty()
+                || passwordTeacher.isEmpty()) {
             String Output = "Please Enter All Data " + nameTeacher;
             JOptionPane.showMessageDialog(this, Output);
 
@@ -741,7 +767,11 @@ public class MainGUI extends javax.swing.JFrame {
         String AddressStudent = StudentAddressArea.getText();
         String passwordStudent = String.valueOf(StudentPasswordField.getPassword());
 
-        if (nameStudent.isEmpty() || usernameStudent.isEmpty() || Grade.isEmpty() || AddressStudent.isEmpty() || passwordStudent.isEmpty()) {
+        if (nameStudent.isEmpty()
+                || usernameStudent.isEmpty()
+                || Grade.isEmpty()
+                || AddressStudent.isEmpty()
+                || passwordStudent.isEmpty()) {
             String Output = "Please Enter All Data " + nameStudent;
             JOptionPane.showMessageDialog(this, Output);
 
