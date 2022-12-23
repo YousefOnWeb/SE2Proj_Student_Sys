@@ -160,7 +160,7 @@ public class QueryFactory {
         String query = String.format("""
                USE %1$s
                ;
-               SELECT * FROM %2$s WHERE %3$s = '%4$s';
+               SELECT * FROM %2$s WHERE %3$s = %4$s;
                """, databaseName, tableName, primaryKeyColName, primaryKey);
         
         ResultSet resultSet = null;

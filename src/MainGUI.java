@@ -10,6 +10,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Properties;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,7 +19,10 @@ import java.util.Properties;
 public class MainGUI extends javax.swing.JFrame {
 
     Properties connectionInfo = new Properties();
-    String databaseName = "se2_school_db";
+    Properties loginCredentials = new Properties();
+    String schoolDatabaseName = "DBBBb";
+    String studentsTableName = "Students";
+    String teachersTableName = "Teachers";
     String connectionURL;
     Connection con = null;
     Statement statement = null;
@@ -72,6 +76,27 @@ public class MainGUI extends javax.swing.JFrame {
             System.out.println(ex.getMessage());
         }
 
+        Defined.QueryFactory.createDBIfNotExists(schoolDatabaseName, statement);
+        Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
+                teachersTableName,
+                "Name varchar(25)"
+                + ", Username varchar(15) NOT NULL "
+                + ", YearsofExperience varchar(15)"
+                + ", Address varchar(255)"
+                + ", Password varchar(30)",
+                statement);
+        // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
+
+        Defined.QueryFactory.createTableIfNotExists(schoolDatabaseName,
+                studentsTableName,
+                "Name varchar(25)"
+                + ", Username varchar(15) NOT NULL "
+                + ", Grade varchar(15)"
+                + ", Address varchar(255)"
+                + ", Password varchar(30)",
+                statement);
+
+        // ALTER TABLE Teachers ADD PRIMARY KEY (Username);
 //        Defined.QueryFactory.createDBIfNotExists("asdfa", statement);
 //        Defined.QueryFactory.setDBAsCurrent("asdfa", statement);
 //        Defined.QueryFactory.createTableIfNotExists("asdfa", "table2", "a7aCol1 varchar(255), a7aCol2 varchar(255)", statement);
@@ -79,7 +104,6 @@ public class MainGUI extends javax.swing.JFrame {
 //        
 //        ArrayList<String> row = Defined.QueryFactory.selectUniqueRow("asdfa", "table2", "a7aCol1","Valioooo", statement);
 //        System.out.println(row.toString());
-
     }
 
     /**
@@ -103,6 +127,7 @@ public class MainGUI extends javax.swing.JFrame {
         RemembermeCheck = new javax.swing.JCheckBox();
         LoginBTN = new javax.swing.JButton();
         LoginTypeChooser = new javax.swing.JComboBox<>();
+        LoginIndicatorLabel = new javax.swing.JLabel();
         RegistrationPanel = new javax.swing.JPanel();
         RegistrationAsATeacher = new javax.swing.JPanel();
         TeacherNameLabel = new javax.swing.JLabel();
@@ -207,6 +232,10 @@ public class MainGUI extends javax.swing.JFrame {
 
         LoginTypeChooser.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Teacher", "Student" }));
 
+        LoginIndicatorLabel.setBackground(new java.awt.Color(255, 255, 255));
+        LoginIndicatorLabel.setFont(new java.awt.Font("Dialog", 1, 16)); // NOI18N
+        LoginIndicatorLabel.setText("Currently Logged As: None");
+
         javax.swing.GroupLayout LoginPanelLayout = new javax.swing.GroupLayout(LoginPanel);
         LoginPanel.setLayout(LoginPanelLayout);
         LoginPanelLayout.setHorizontalGroup(
@@ -225,11 +254,17 @@ public class MainGUI extends javax.swing.JFrame {
                             .addComponent(LoginLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
                             .addComponent(PasswordField))))
                 .addContainerGap(212, Short.MAX_VALUE))
+            .addGroup(LoginPanelLayout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addComponent(LoginIndicatorLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         LoginPanelLayout.setVerticalGroup(
             LoginPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(LoginPanelLayout.createSequentialGroup()
-                .addContainerGap(140, Short.MAX_VALUE)
+                .addGap(23, 23, 23)
+                .addComponent(LoginIndicatorLabel)
+                .addGap(99, 99, 99)
                 .addComponent(LoginLabel)
                 .addGap(41, 41, 41)
                 .addComponent(UsernameLabel)
@@ -245,7 +280,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addComponent(LoginTypeChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(LoginBTN)
-                .addContainerGap(124, Short.MAX_VALUE))
+                .addContainerGap(123, Short.MAX_VALUE))
         );
 
         MainTabbedPanel.addTab("Login", LoginPanel);
@@ -611,6 +646,31 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void RegisterAsTeacherButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegisterAsTeacherButtonActionPerformed
         // TODO add your handling code here:
+        String nameTeacher = TeacherNameTextField.getText();
+        String usernameTeacher = TeacherUsernameTextField.getText();
+        String YearsOfExperince = YoETextField.getText();
+        String AddressTeacher = TeacherAddressArea.getText();
+        String passwordTeacher = String.valueOf(TeacherPasswordField.getPassword());
+
+        if (nameTeacher.isEmpty() || usernameTeacher.isEmpty() || YearsOfExperince.isEmpty() || AddressTeacher.isEmpty() || passwordTeacher.isEmpty()) {
+            String Output = "Please Enter All Data " + nameTeacher;
+            JOptionPane.showMessageDialog(this, Output);
+
+        } else {
+
+            String RowValueToInsert = String.format(" '%1$s','%2$s',%3$s,'%4$s','%5$s' ",
+                    nameTeacher,
+                    usernameTeacher,
+                    YearsOfExperince,
+                    AddressTeacher,
+                    passwordTeacher);
+
+            Defined.QueryFactory.insertInto(schoolDatabaseName, teachersTableName, RowValueToInsert, statement);
+
+            String Output = "Register Successfull " + nameTeacher;
+            JOptionPane.showMessageDialog(this, Output);
+
+        }
     }//GEN-LAST:event_RegisterAsTeacherButtonActionPerformed
 
     private void StudentNameTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_StudentNameTextFieldActionPerformed
@@ -627,6 +687,31 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void RegisterAsStudentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_RegisterAsStudentButtonActionPerformed
         // TODO add your handling code here:
+        String nameStudent = StudentNameTextField.getText();
+        String usernameStudent = StudentUsernameTextField.getText();
+        String Grade = GradeTextField.getText();
+        String AddressStudent = StudentAddressArea.getText();
+        String passwordStudent = String.valueOf(StudentPasswordField.getPassword());
+
+        if (nameStudent.isEmpty() || usernameStudent.isEmpty() || Grade.isEmpty() || AddressStudent.isEmpty() || passwordStudent.isEmpty()) {
+            String Output = "Please Enter All Data " + nameStudent;
+            JOptionPane.showMessageDialog(this, Output);
+
+        } else {
+
+            String valuesToInsertIntoRow = String.format(" '%1$s','%2$s',%3$s,'%4$s','%5$s' ",
+                    nameStudent,
+                    usernameStudent,
+                    Grade,
+                    AddressStudent,
+                    passwordStudent);
+
+            Defined.QueryFactory.insertInto(schoolDatabaseName, studentsTableName, valuesToInsertIntoRow, statement);
+
+            String Output = "Register Successfull " + nameStudent;
+            JOptionPane.showMessageDialog(this, Output);
+
+        }
     }//GEN-LAST:event_RegisterAsStudentButtonActionPerformed
 
     private void UsernameTxtFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UsernameTxtFieldActionPerformed
@@ -643,6 +728,48 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void LoginBTNActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LoginBTNActionPerformed
         // TODO add your handling code here:
+        String usernameEntered = UsernameTxtField.getText();
+        String passwordEntered = String.valueOf(PasswordField.getPassword());
+        String loginTypeSelected = LoginTypeChooser.getSelectedItem().toString();
+
+        if (usernameEntered.isEmpty() || passwordEntered.isEmpty()) {
+            String Output = "Enter Your Login Data ";
+            JOptionPane.showMessageDialog(this, Output);
+        } else {
+
+            ArrayList<String> row = Defined.QueryFactory.selectUniqueRow(schoolDatabaseName,
+                    loginTypeSelected.equals("Teacher") ? teachersTableName: studentsTableName,
+                    "Username" // Column
+                    ,"\'" + usernameEntered + "\'",
+                     statement);
+
+            if(row.isEmpty() || !row.get(4).equals(passwordEntered)){
+                JOptionPane.showMessageDialog(this, "Wrong Login Credentials");
+            }
+            else{
+                String messageText = String.format("""
+                                              Your Profile:
+                                              =====================
+                                                   
+                                              Name: %1$s
+                                              ------
+                                              Username: %2$s
+                                              ------
+                                              %3$s: %4$s
+                                              ------
+                                              Address:
+                                              %5$s
+                                              ------
+                                              
+                                              """,row.get(0),
+                                              row.get(1),
+                                              loginTypeSelected.equals("Teacher") ? "Years of experience": "Grade",
+                                              row.get(2),
+                                              row.get(3));
+                JOptionPane.showMessageDialog(this, messageText);
+            }
+
+        }
     }//GEN-LAST:event_LoginBTNActionPerformed
 
     /**
@@ -692,6 +819,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JLabel Headlabel;
     private javax.swing.JPanel HomePanel;
     private javax.swing.JButton LoginBTN;
+    private javax.swing.JLabel LoginIndicatorLabel;
     private javax.swing.JLabel LoginLabel;
     private javax.swing.JPanel LoginPanel;
     private javax.swing.JComboBox<String> LoginTypeChooser;
